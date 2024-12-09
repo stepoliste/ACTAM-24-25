@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analog Drum Machine</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="progress pink">
+    <div class="indeterminate white"></div>
+  </div>
+  <div class="app" style="display: none;">
+    <div class="tempo-control">
+      <div class="rotary-slider">
+        <input type="range" id="tempo" min="40" max="200" value="120" step="1">
+        <div class="dial"></div>
+      </div>
+      Tempo
+    </div>
+    <div class="sequencer">
+      <div class="steps">
+        <div class="drum-label">
+          <div class="cell kick on" data-step-idx="0" data-cell-idx="0">Kick</div>
+          <div class="cell snare" data-step-idx="0" data-cell-idx="1">Snare</div>
+          <div class="cell hi-hat-closed" data-step-idx="0" data-cell-idx="2">Hi-hat closed</div>
+          <div class="cell hi-hat-open" data-step-idx="0" data-cell-idx="3">Hi-hat open</div>
+          <div class="cell tom-mid" data-step-idx="0" data-cell-idx="4">Tom mid</div>
+          <div class="cell clap" data-step-idx="0" data-cell-idx="5">Clap</div>
+          <div class="cell rim" data-step-idx="0" data-cell-idx="6">Rim</div>
+        </div>
+        <!-- ...repeat for other steps... -->
+      </div>
+    </div>
+    <a class="regenerate btn-floating btn-large waves-effect waves-light pink darken-2 pulse">
+      <i class="material-icons">refresh</i>
+    </a>
+    <div class="controls">
+      <div class="control">
+        <a class="playpause btn-floating btn-large waves-effect waves-light blue">
+          <i class="material-icons play-icon">play_arrow</i>
+          <i class="material-icons pause-icon" style="display: none">pause</i>
+        </a>
+        <div class="control-label">Play/Pause</div>
+      </div>
+      
+      <div class="control">
+        <div class="rotary-slider">
+          <input type="range" id="swing" min="0.5" max="0.7" value="0.55" step="0.05">
+          <div class="dial"></div>
+          <div class="value-label" id="swing-value">0.55</div>
+        </div>
+        <div class="control-label">Swing</div>
+      </div>
+      <div class="control">
+        <div class="rotary-slider">
+          <input type="range" id="temperature" class="tooltipped" min="0.5" max="2" value="1.1" step="0.1" data-tooltip="Higher temperatures will make the neural network generates wilder patterns"
+                 data-delay="500">
+          <div class="dial"></div>
+          <div class="value-label" id="temperature-value">1.1</div>
+        </div>
+        <div class="control-label">Temperature</div>
+      </div>
+    </div>
+  </div>
+  <div class="info">
+    <p class="webmidi-enabled" style="display: none;">
+      Output:
+      <select class="midi-output"></select>
+    </p>
+    <p class="webmidi-enabled" style="display: none;">
+      MIDI clock output:
+      <select class="midi-clock-output"></select>
+    </p>
+    <p class="webmidi-enabled" style="display: none;">
+      MIDI clock input:
+      <select class="midi-clock-input"></select>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/babel-regenerator-runtime@6.5.0/runtime.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.5/lodash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@magenta/music@1.1.11/dist/magentamusic.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/js/materialize.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/web-animations-js@2.3.1/web-animations.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/webmidi@2.0.0/webmidi.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
