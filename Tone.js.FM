@@ -1,0 +1,218 @@
+let audioContext;
+let oscillatorCarrier;
+let oscillatorModulator;
+let gainNode;
+let playing = false;
+let analyserNode;
+
+const frequencySlider = document.getElementById('frequency');
+const modulationSlider = document.getElementById('modulation');
+const decaySlider = document.getElementById('decay'); // Nuovo slider Decay
+const playButton = document.getElementById('playButton');
+const stopButton = document.getElementById('stopButton');
+const frequencyValue = document.getElementById('frequencyValue');
+const modulationValue = document.getElementById('modulationValue');
+const decayValue = document.getElementById('decayValue');
+const canvas = document.getElementById('oscilloscope');
+const canvasCtx = canvas.getContext('2d');
+const waveTypeSelect = document.getElementById('waveType');
+
+
+// Aggiorna i valori visualizzati
+frequencySlider.oninput = () => frequencyValue.textContent = frequencySlider.value;
+modulationSlider.oninput = () => modulationValue.textContent = modulationSlider.value;
+decaySlider.oninput = () => decayValue.textContent = decaySlider.value;
+
+playButton.onclick = () => startSound();
+stopButton.onclick = () => stopSound();
+
+function createNoiseBuffer() {
+    const bufferSize = audioContext.sampleRate * 2; // 2 secondi di durata
+    const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1; // Valori casuali tra -1 e 1
+    }
+    return buffer;
+}
+
+// Cambia il tipo di onda in tempo reale
+waveTypeSelect.onchange = () => {
+    if (waveTypeSelect.value === 'noise') {
+        // Disabilita l'oscillatore e usa noise
+        if (oscillatorCarrier) {
+            oscillatorCarrier.stop();
+        }
+        const noiseSource = audioContext.createBufferSource();
+        noiseSource.buffer = noiseBuffer;
+        noiseSource.loop = true;
+
+        // Connetti il noise al GainNode
+        noiseSource.connect(gainNode);
+        noiseSource.start();
+
+        oscillatorCarrier = noiseSource; // Sostituisci l'oscillatore con il noise
+    } else {
+        // Cambia il tipo di onda dell'oscillatore
+        if (oscillatorCarrier && oscillatorCarrier.type) {
+            oscillatorCarrier.type = waveTypeSelect.value;
+        }
+    }
+};
+
+function startSound() {
+    if (playing) return;
+
+    // Crea il contesto audio
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    oscillatorCarrier = audioContext.createOscillator();
+    oscillatorModulator = audioContext.createOscillator();
+    gainNode = audioContext.createGain();
+    analyserNode = audioContext.createAnalyser();
+
+    noiseBuffer = createNoiseBuffer(); // Crea il buffer per il noise
+
+    // Imposta il tipo di onda iniziale
+    oscillatorCarrier.type = waveTypeSelect.value;
+    oscillatorCarrier.frequency.setValueAtTime(frequencySlider.value, audioContext.currentTime);
+
+    oscillatorModulator.type = 'sine';
+    oscillatorModulator.frequency.setValueAtTime(modulationSlider.value, audioContext.currentTime);
+
+    const decayTime = parseFloat(decaySlider.value);
+    gainNode.gain.setValueAtTime(1, audioContext.currentTime); // Inizio suono
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + decayTime); // Fine suono
+
+    analyserNode.fftSize = 2048;
+
+    // Collegamenti audio
+    oscillatorCarrier.connect(gainNode);
+    oscillatorModulator.connect(gainNode.gain);
+    gainNode.connect(analyserNode);
+    analyserNode.connect(audioContext.destination);
+
+    // Avvia gli oscillatori
+    oscillatorCarrier.start();
+    oscillatorModulator.start();
+
+    playing = true;
+    playButton.disabled = true;
+    stopButton.disabled = false;
+
+    // Disegna il segnale
+    drawWaveform();
+
+    // Ferma il suono dopo il Decay
+    setTimeout(stopSound, decayTime * 1000);
+}
+
+function drawWaveform() {
+    const bufferLength = analyserNode.fftSize;
+    const dataArray = new Uint8Array(bufferLength);
+
+    function draw() {
+        if (!playing) return;
+
+        analyserNode.getByteTimeDomainData(dataArray);
+
+        canvasCtx.fillStyle = '#fff';
+        canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+        canvasCtx.lineWidth = 2;
+        canvasCtx.strokeStyle = '#000';
+        canvasCtx.beginPath();
+
+        const sliceWidth = canvas.width / bufferLength;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+            const v = dataArray[i] / 128.0;
+            const y = (v * canvas.height) / 2;
+
+            if (i === 0) {
+                canvasCtx.moveTo(x, y);
+            } else {
+                canvasCtx.lineTo(x, y);
+            }
+
+            x += sliceWidth;
+        }
+
+        canvasCtx.lineTo(canvas.width, canvas.height / 2);
+        canvasCtx.stroke();
+
+        requestAnimationFrame(draw);
+    }
+
+    draw();
+}
+
+function stopSound() {
+    if (!playing) return;
+
+    oscillatorCarrier.stop();
+    oscillatorModulator.stop();
+
+    playing = false;
+    playButton.disabled = false;
+    stopButton.disabled = true;
+
+    canvasCtx.clearRect(0, 0, canvas.width, canvas.height); // Cancella il canvas
+}
+
+// Aggiornamento della frequenza in tempo reale
+frequencySlider.oninput = () => {
+    frequencyValue.textContent = frequencySlider.value;
+    if (oscillatorCarrier) {
+        oscillatorCarrier.frequency.setValueAtTime(frequencySlider.value, audioContext.currentTime);
+    }
+};
+
+modulationSlider.oninput = () => {
+    modulationValue.textContent = modulationSlider.value;
+    if (oscillatorModulator) {
+        oscillatorModulator.frequency.setValueAtTime(modulationSlider.value, audioContext.currentTime);
+    }
+};
+
+decaySlider.oninput = () => {
+    decayValue.textContent = decaySlider.value;
+};
+
+
+// Mappa delle note musicali
+const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+// Funzione per convertire frequenza in nota
+function frequencyToNote(frequency) {
+    const A4 = 440; // Frequenza del La centrale
+    const semitonesFromA4 = Math.round(12 * Math.log2(frequency / A4));
+    const octave = Math.floor((semitonesFromA4 + 9) / 12) + 4; // Calcola l'ottava
+    const noteIndex = (semitonesFromA4 + 9) % 12; // Indice della nota
+    const note = noteNames[(noteIndex + 12) % 12]; // Garantisce che l'indice sia positivo
+    return `${note}${octave}`;
+}
+
+// Elementi HTML per mostrare le note
+const frequencyNote = document.getElementById('frequencyNote');
+const modulationNote = document.getElementById('modulationNote');
+
+// Aggiorna la frequenza e la nota associata per Pitch
+frequencySlider.oninput = () => {
+    const frequency = parseFloat(frequencySlider.value);
+    frequencyValue.textContent = frequency;
+    frequencyNote.textContent = frequencyToNote(frequency);
+    if (oscillatorCarrier) {
+        oscillatorCarrier.frequency.setValueAtTime(frequency, audioContext.currentTime);
+    }
+};
+
+// Aggiorna la frequenza e la nota associata per FM Amount
+modulationSlider.oninput = () => {
+    const frequency = parseFloat(modulationSlider.value);
+    modulationValue.textContent = frequency;
+    modulationNote.textContent = frequencyToNote(frequency);
+    if (oscillatorModulator) {
+        oscillatorModulator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+    }
+};
