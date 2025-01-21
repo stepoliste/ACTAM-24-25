@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sintetizzatore FM</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>FMsynth</h1>
+
+        <div class="controls">
+            <label for="frequency">Pitch:</label>
+            <input type="range" id="frequency" min="20" max="220" value="100" step="1">
+            <span id="frequencyValue">220</span>Hz (<span id="frequencyNote">A4</span>)
+        </div>
+        
+        <div class="controls">
+            <label for="modulation">FMamount:</label>
+            <input type="range" id="modulation" min="1" max="100" value="220" step="1">
+            <span id="modulationValue">220</span>Hz (<span id="modulationNote">A3</span>)
+        </div>        
+
+        <div class="controls">
+            <label for="decay">Decay:</label>
+            <input type="range" id="decay" min="0.1" max="10" value="1" step="0.1">
+            <span id="decayValue">1</span> s
+        </div>
+
+        <div class="controls">
+            <button id="playButton">Play</button>
+            <button id="stopButton" disabled>Stop</button>
+            <canvas id="oscilloscope"></canvas>
+        </div>
+
+        <div class="controls">
+            <label for="waveType">Wave Type:</label>
+            <select id="waveType">
+                <option value="sine">Sine</option>
+                <option value="triangle">Triangle</option>
+                <option value="square">Square</option>
+                <option value="sawtooth">Sawtooth</option>
+                <option value="noise">Noise</option>
+            </select>
+        </div>   
+    </div>
+       
+    <script src="script.js"></script>
+</body>
+</html>
+
