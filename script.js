@@ -13,12 +13,7 @@ let Tone = mm.Player.tone;
 
 let sampleBaseUrl = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/969699';
 
-let reverb = new Tone.Convolver(
-  `${sampleBaseUrl}/small-drum-room.wav`
-).toMaster();
-reverb.wet.value = 0.35;
-
-let snarePanner = new Tone.Panner().connect(reverb);
+let snarePanner = new Tone.Panner().toMaster();
 new Tone.LFO(0.13, -0.25, 0.25).connect(snarePanner.pan).start();
 
 let drumKit = [
@@ -36,27 +31,27 @@ let drumKit = [
     high: `${sampleBaseUrl}/808-hihat-vh.mp3`,
     med: `${sampleBaseUrl}/808-hihat-vm.mp3`,
     low: `${sampleBaseUrl}/808-hihat-vl.mp3`
-  }).connect(new Tone.Panner(-0.5).connect(reverb)),
+  }).connect(new Tone.Panner(-0.5).toMaster()),
   new Tone.Players({
     high: `${sampleBaseUrl}/808-hihat-open-vh.mp3`,
     med: `${sampleBaseUrl}/808-hihat-open-vm.mp3`,
     low: `${sampleBaseUrl}/808-hihat-open-vl.mp3`
-  }).connect(new Tone.Panner(-0.5).connect(reverb)),
+  }).connect(new Tone.Panner(-0.5).toMaster()),
   new Tone.Players({
     high: `${sampleBaseUrl}/slamdam-tom-mid-vh.mp3`,
     med: `${sampleBaseUrl}/slamdam-tom-mid-vm.mp3`,
     low: `${sampleBaseUrl}/slamdam-tom-mid-vl.mp3`
-  }).connect(reverb),
+  }).toMaster(),
   new Tone.Players({
     high: `${sampleBaseUrl}/909-clap-vh.mp3`,
     med: `${sampleBaseUrl}/909-clap-vm.mp3`,
     low: `${sampleBaseUrl}/909-clap-vl.mp3`
-  }).connect(new Tone.Panner(0.5).connect(reverb)),
+  }).connect(new Tone.Panner(0.5).toMaster()),
   new Tone.Players({
     high: `${sampleBaseUrl}/909-rim-vh.wav`,
     med: `${sampleBaseUrl}/909-rim-vm.wav`,
     low: `${sampleBaseUrl}/909-rim-vl.wav`
-  }).connect(new Tone.Panner(0.5).connect(reverb))
+  }).connect(new Tone.Panner(0.5).toMaster())
 ];
 let midiDrums = [36, 38, 42, 46, 43, 49, 51];
 let reverseMidiMapping = new Map([
@@ -262,29 +257,15 @@ Promise.all([
             stepEl.classList.add('regenerating');
           } else {
             stepEl.classList.remove('regenerating');
+            stepEl.classList.add('generated'); // Add generated class
           }
         }
       }, stagger);
     }
 
-    setTimeout(repositionRegenerateButton, 0);
   }
 
-  function repositionRegenerateButton() {
-    let regenButton = document.querySelector('.regenerate');
-    let sequencerEl = document.querySelector('.sequencer');
-    let regenLeft =
-      sequencerEl.offsetLeft +
-      sequencerEl.offsetWidth / 2 -
-      regenButton.offsetWidth / 2;
-    let regenTop =
-      sequencerEl.offsetTop +
-      sequencerEl.offsetHeight / 2 -
-      regenButton.offsetHeight / 2;
-    regenButton.style.left = `${regenLeft}px`;
-    regenButton.style.top = `${regenTop}px`;
-    regenButton.style.visibility = 'visible';
-  }
+ 
 
   function regenerate() {
     let seed = _.take(state.pattern, state.seedLength);
@@ -639,10 +620,50 @@ Promise.all([
     .on('change', evt => setPatternLength(+evt.target.value))
     .formSelect();
 
-  window.addEventListener('resize', repositionRegenerateButton);
 
   renderPattern();
 
   document.querySelector('.progress').remove();
   document.querySelector('.app').style.display = null;
 });
+
+/* ...existing code... */
+const modulationParams = {
+  'kick': { pitch: 50, attack: 50, reverb: 50, saturation: 50 },
+  'snare': { pitch: 50, attack: 50, reverb: 50, saturation: 50 },
+  'hat-closed': { pitch: 50, attack: 50, reverb: 50, saturation: 50 },
+  'hat-open': { pitch: 50, attack: 50, reverb: 50, saturation: 50 },
+  'tom': { pitch: 50, attack: 50, reverb: 50, saturation: 50 },
+  'clap': { pitch: 50, attack: 50, reverb: 50, saturation: 50 },
+  'rim': { pitch: 50, attack: 50, reverb: 50, saturation: 50 }
+};
+
+document.querySelectorAll('.modulation-row .knob').forEach(knob => {
+  knob.addEventListener('input', event => {
+    const param = event.target.dataset.param.split('-');
+    const sound = param[0];
+    const control = param[1];
+    modulationParams[sound][control] = event.target.value;
+    applyModulation(sound, control, event.target.value);
+  });
+});
+
+
+/* ...existing code... */
+function applyModulation(sound, control, value) {
+  const player = drumKit[DRUM_CLASSES.indexOf(sound.charAt(0).toUpperCase() + sound.slice(1))];
+  switch (control) {
+    case 'pitch':
+      player.playbackRate = value / 50; // Adjust playback rate for pitch modulation
+      break;
+    case 'attack':
+      player.attack = value / 100; // Adjust attack time
+      break;
+    case 'reverb':
+      const reverb = new Tone.Reverb(value / 10).toMaster();
+      player.connect(reverb); // Connect player to reverb
+      break;
+    default:
+      console.log(`Unknown control: ${control}`);
+  }
+}
