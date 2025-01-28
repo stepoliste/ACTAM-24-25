@@ -1,8 +1,3 @@
-@font-face {
-  font-family: 'DIN Condensed';
-  src: url('/path/to/DINCondensed.ttf') format('truetype');
-}
-
 html,
 body,
 .app {

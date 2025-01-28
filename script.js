@@ -603,8 +603,39 @@ Promise.all([
       }
     }
   });
+
+
+  const knobs = [
+    { id: 'tempo', image: 'knobs/gb/small_black_120.png' },
+    { id: 'swing', image: 'knobs/gb/pointy_red_120.png' },
+    { id: 'temperature', image: 'knobs/gb/pointy_white_120.png' }
+  ];
+
+  knobs.map(({id, image, indicator}) => {
+    const el = document.getElementById(id)
+    KnobHelper.createKnobSprite(el, id, image, indicator)
+  })
+  
+  knobs.forEach(({ id, image }) => {
+    const knobElement = document.getElementById(id);
+
+    // Log the value when the knob changes
+    knobElement.addEventListener('change', (event) => {
+      console.log(`Knob "${id}" value: ${event.target.value}`);
+      if (id === 'tempo') {
+        Tone.Transport.bpm.value = state.tempo = +event.target.value;
+        oneEighth = Tone.Time('8n').toSeconds();
+      } else if (id === 'swing') { 
+        setSwing(+event.target.value);
+      } else if (id === 'temperature') {
+        temperature = +event.target.value;
+      }
+    });
+  });
+  
   document.querySelector('#swing').addEventListener('input', evt => {
     setSwing(+evt.target.value);
+    console.log('swing', evt.target.value);
     document.querySelector('#swing-value').textContent = evt.target.value;
   });
   document.querySelector('#temperature').addEventListener('input', evt => {

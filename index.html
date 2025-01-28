@@ -6,16 +6,30 @@
   <title>Analog Drum Machine</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css">
   <link rel="stylesheet" href="style.css">
+
+  <link rel="stylesheet" href="asset/ui.css" />
+  <link rel="stylesheet" href="asset/css_knobs.css" />
+  <script type="text/javascript" src="jquery.min.js"></script>
+  <script type="text/javascript" src="Knob.js"></script>
+
 </head>
 <body>
   <div class="progress red">
     <div class="indeterminate white"></div>
   </div>
   <div class="app">
-    <div class="tempo-control">
-      <input type="range" id="tempo" min="40" max="200" value="120" step="1" data-width="80" data-height="80"/> 
-      <div class="control-label" style="font-size: 40px;">Tempo</div>
-    </div>
+    <input type="range" 
+      id="tempo" 
+      name="position-sprite-knob"
+      type="range"
+      value="120"
+      min="30" max="180"
+      data-sprite-count="120"
+      data-sprite-separation-gap="1"
+      data-angle-start="-30" 
+      data-angle-end="210"
+      /> 
+    <div style="font-size: 20px;">Tempo</div>
     <div class="sequencer">
       <div class="steps">
         <div class="drum-label">
@@ -44,16 +58,29 @@
       </div>
       <!-- Swing control -->
       <div class="control">
-        <input type="range" id="swing" min="0.5" max="0.7" value="0.55" step="0.05">
-        <div class="value-label" id="swing-value">0.55</div>
+        <input id="swing"
+         type="range"
+         min="0.5" max="0.7" value="0.55" step="0.01"
+         data-sprite-count="120"
+         data-sprite-separation-gap="1"
+         data-angle-start="-30" 
+         data-angle-end="210" 
+         style="display: none;">
         <div class="control-label" style="font-size: 40px;">Swing</div>
       </div>
       <!-- Temperature control -->
       <div class="control">
-        <input type="range" id="temperature"  min="0.5" max="2" value="1.1" step="0.1"
-          data-tooltip="Higher temperatures will make the neural network generate wilder patterns"
-          data-delay="500"/>
-        <div class="value-label" id="temperature-value">1.1</div>
+        <input id="temperature"
+         name="secret_arrow"
+         type="range"
+         min="0.5" max="2" value="1.1" step="0.1"
+         data-sprite-count="120"
+         data-sprite-separation-gap="1"
+         data-angle-start="-30" 
+         data-angle-end="210" 
+         style="display: none;"
+         data-tooltip="Higher temperatures will make the neural network generate wilder patterns"
+        data-delay="500"/>
         <div class="control-label" style="font-size: 40px;">Temperature</div>
       </div>
     </div>
@@ -138,5 +165,14 @@
   <script src="https://cdn.jsdelivr.net/npm/web-animations-js@2.3.1/web-animations.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/webmidi@2.0.0/webmidi.min.js"></script>
   <script src="script.js"></script>
+
+
+
+  <!-- mouse/touch events -->
+  <script type="text/javascript" src="asset/ui.js"></script>
+  <script type="text/javascript" src="asset/knob_helper.js"></script>
+  <script type="text/javascript">
+
+  </script>
 </body>
 </html>
