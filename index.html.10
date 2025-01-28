@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analog Drum Machine</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="progress red">
+    <div class="indeterminate white"></div>
+  </div>
+  <div class="app">
+    <div class="tempo-control">
+      <input type="range" id="tempo" min="40" max="200" value="120" step="1" data-width="80" data-height="80"/> 
+      <div class="control-label" style="font-size: 40px;">Tempo</div>
+    </div>
+    <div class="sequencer">
+      <div class="steps">
+        <div class="drum-label">
+          <div class="cell kick on" data-step-idx="0" data-cell-idx="0" style="height: calc(90% / 7);">Kick</div>
+          <div class="cell snare" data-step-idx="0" data-cell-idx="1" style="height: calc(90% / 7);">Snare</div>
+          <div class="cell hi-hat-closed" data-step-idx="0" data-cell-idx="2" style="height: calc(90% / 7);">Hi-hat closed</div>
+          <div class="cell hi-hat-open" data-step-idx="0" data-cell-idx="3" style="height: calc(90% / 7);">Hi-hat open</div>
+          <div class="cell tom-mid" data-step-idx="0" data-cell-idx="4" style="height: calc(90% / 7);">Tom mid</div>
+          <div class="cell clap" data-step-idx="0" data-cell-idx="5" style="height: calc(90% / 7);">Clap</div>
+          <div class="cell rim" data-step-idx="0" data-cell-idx="6" style="height: calc(90% / 7);">Rim</div></div>
+        </div>
+      </div>
+      <!-- Controls for the drum machine -->
+    <div class="controls">
+      <!-- Play/Pause button -->
+      <div class="control" >
+        <a class="playpause waves-effect">
+          PLAY/PAUSE
+        </a>
+      </div>
+      <!-- Regenerate button -->
+      <div class="control">
+        <a class="regenerate waves-effect">
+          GENERATE
+        </a>
+      </div>
+      <!-- Swing control -->
+      <div class="control">
+        <input type="range" id="swing" min="0.5" max="0.7" value="0.55" step="0.05">
+        <div class="value-label" id="swing-value">0.55</div>
+        <div class="control-label" style="font-size: 40px;">Swing</div>
+      </div>
+      <!-- Temperature control -->
+      <div class="control">
+        <input type="range" id="temperature"  min="0.5" max="2" value="1.1" step="0.1"
+          data-tooltip="Higher temperatures will make the neural network generate wilder patterns"
+          data-delay="500"/>
+        <div class="value-label" id="temperature-value">1.1</div>
+        <div class="control-label" style="font-size: 40px;">Temperature</div>
+      </div>
+    </div>
+    </div>
+
+    
+    
+    <!-- Modulation section -->
+    <div class="modulation-section">
+      <!-- Kick -->
+      <div class="modulation-row">
+        <div class="label">Kick</div>
+
+        <input type="range" id="kick-volume" class="knob" min="0" max="100" value="50">
+        <input type="range" id="kick-pitchAmount" class="knob" min="0" max="100" value="50">
+        <input type="range" id="kick-highpass" class="knob" min="0" max="100" value="50">
+        <button id="kick-button" class="play-button">Play</button>
+      </div>
+      <!-- Snare -->
+      <div class="modulation-row">
+        <div class="label">Snare</div>
+        <input type="range" id="snare-volume" class="knob" min="0" max="100" value="50">
+        <input type="range" id="snare-pitchAmount" class="knob" min="0" max="100" value="50">
+        <input type="range" id="snare-highpass" class="knob" min="0" max="100" value="50">
+        <button id="Snare-button" class="play-button">Play</button>
+      </div>
+      <!-- Hi-hat Closed -->
+      <div class="modulation-row">
+        <div class="label">Hi-hat Closed</div>
+        <input type="range" id="hiHatClosed-volume" class="knob" min="0" max="100" value="50">
+        <input type="range" id="hiHatClosed-pitchAmount" class="knob" min="0" max="100" value="50">
+        <input type="range" id="hiHatClosed-highpass" class="knob" min="0" max="100" value="50">
+        <button id="Hi-hat Closed-button" class="play-button">Play</button>
+      </div>
+      <!-- Hi-hat Open -->
+      <div class="modulation-row">
+        <div class="label">Hi-hat Open</div>
+        <input type="range" id="hiHatOpen-volume" class="knob" min="0" max="100" value="50">
+        <input type="range" id="hiHatOpen-pitchAmount" class="knob" min="0" max="100" value="50">
+        <input type="range" id="hiHatOpen-highpass" class="knob" min="0" max="100" value="50">
+        <button id="Hi-hat Open-button" class="play-button">Play</button>
+      </div>
+      <!-- Tom -->
+      <div class="modulation-row">
+        <div class="label">Tom</div>
+        <input type="range" id="tom-volume" class="knob" min="0" max="100" value="50">
+        <input type="range" id="tom-pitchAmount" class="knob" min="0" max="100" value="50">
+        <input type="range" id="tom-highpass" class="knob" min="0" max="100" value="50">
+        <button id="Tom-button" class="play-button">Play</button>
+      </div>
+      <!-- Clap -->
+      <div class="modulation-row">
+        <div class="label">Clap</div>
+        <input type="range" id="clap-volume" class="knob" min="0" max="100" value="50">
+        <input type="range" id="clap-pitchAmount" class="knob" min="0" max="100" value="50">
+        <input type="range" id="clap-highpass" class="knob" min="0" max="100" value="50">
+        <button id="Clap-button" class="play-button">Play</button>
+      </div>
+      <!-- Rim -->
+      <div class="modulation-row">
+        <div class="label">Rim</div>
+        <input type="range" id="rim-volume" class="knob" min="0" max="100" value="50">
+        <input type="range" id="rim-pitchAmount" class="knob" min="0" max="100" value="50">
+        <input type="range" id="rim-highpass" class="knob" min="0" max="100" value="50">
+        <button id="Rim-button" class="play-button">Play</button>
+      </div>
+    </div>
+    
+
+
+  <!-- MIDI section -->
+  </div>
+  <div class="info">
+    <p class="webmidi-enabled" style="display: none;">
+      Output:
+      <select class="midi-output"></select>
+    </p>
+    <p class="webmidi-enabled" style="display: none;">
+      MIDI clock output:
+      <select class="midi-clock-output"></select>
+    </p>
+    <p class="webmidi-enabled" style="display: none;">
+      MIDI clock input:
+      <select class="midi-clock-input"></select>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/babel-regenerator-runtime@6.5.0/runtime.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.5/lodash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@magenta/music@1.1.11/dist/magentamusic.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/js/materialize.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/web-animations-js@2.3.1/web-animations.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/webmidi@2.0.0/webmidi.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
