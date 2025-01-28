@@ -13,11 +13,12 @@ body{
 	font-size: 14px;
 	line-height: 1.8;
 	margin: 10px;
+	text-align: center;
 }
 
 .ui-knob-container{
 	position: relative;
-	width: 256px;
+	width: 100px;
 	height: 100px;
 	cursor: default;
 	overflow: hidden;
@@ -28,6 +29,7 @@ body{
 	-ms-user-select: none;
 	-o-user-select: none;
 	user-select: none;
+	
 }
 
 #content{

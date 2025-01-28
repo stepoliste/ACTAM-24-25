@@ -1,6 +1,5 @@
 html,
-body,
-.app {
+body{
   margin: 0;
   padding: 0;
   width: 100%;
@@ -68,6 +67,7 @@ body,
 .select-wrapper input {
   color: #f4f4f4;
 }
+
 .sequencer {
   position: relative;
   height: 70vh;
@@ -81,11 +81,7 @@ body,
   background-color: #1a1a1a;
   
 }
-.sequencer .legend {
-  flex: 0.75;
-  display: flex;
-  flex-direction: column;
-}
+
 .drum-class {
   display: flex;
   align-items: center;
@@ -94,13 +90,27 @@ body,
   font-size: 12px;
   color: #ccc;
 }
-.drum-label {
-  width: 100px;
-  text-align: right;
-  padding-right: 10px;
-  color: #e0e0e0;
-  font-size: 25px;
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly; /* Distribuisce le label in modo uniforme */
+  padding: 0 10px; /* Spazio interno a sinistra e destra */
+  margin-top: 5px; /* Sposta leggermente la colonna verso il basso */
 }
+
+.drum-label { /* Allinea il testo a destra */
+  width: 100%; /* Occupa tutta la larghezza del contenitore */
+  color: #e0e0e0;
+  font-size: 14px;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  align-items: center; /* Centra verticalmente ogni label */
+  height: calc(100% / 7); /* Altezza dinamica per adattarsi al numero di righe */
+}
+
+
 .sequencer .steps {
   flex: 9;
   display: flex;
@@ -113,7 +123,6 @@ body,
   transform-style: preserve-3d;
 }
 
-
 .cell {
   margin: 5px 2px;
   background-color: rgba(255, 255, 255, 0.1);
@@ -125,7 +134,7 @@ body,
   border-radius: 10px;
   background: Linear-gradient (90deg, #2d2d2d, #4d4d4d); 
   box-shadow: -5px -5px 15px Orgba(0, 0, 0, 0.1), 10px 5px 10px Orgba(0, 0, 0, 0.15); 
-  border-top: 2px solid rgba(0, 0, 0, 0.27); 
+  border-top: 2px solid 0rgba(0, 0, 0, 0.27); 
   border-bottom: 2px solid Orgba(0, 0, 0, 0.27); 
   border-left: 2px solid Orgba(0, 0, 0, 0.6);
 }
@@ -180,7 +189,9 @@ body,
 }
 
 .info {
-  max-width: 50%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
   margin: 100px auto;
   text-align: center;
 }
@@ -222,6 +233,21 @@ body,
   cursor: pointer;
   transition: all 0.3s ease;
 }
+.clear{
+  background: linear-gradient(145deg, #2d2d2d, #3b3b3b);
+  width: 140%;
+  border-radius: 12px;
+  border: 10px;
+  border-color: #ccc;
+  font-size: 1.5em;
+  color: white;
+  text-align: center;
+  line-height: 80px; /* Center the text vertically */
+  box-shadow: 5px 5px 10px #1e1e1e, -5px -5px 10px #4a4a4a;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
 
 .modulation-section {
   width: 80vw;
@@ -251,4 +277,176 @@ body,
   width: 60px;
   height: 60px;
   margin: 0 10px;
+}
+
+.hitbutt{
+  background: linear-gradient(145deg, #2d2d2d, #3b3b3b);
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  border: 10px;
+  border-color: #ccc;
+  font-size: 12px;
+  color: white;
+  text-align: center;
+  line-height: 20px; /* Center the text vertically */
+  box-shadow: 5px 5px 10px #1e1e1e, -5px -5px 10px #4a4a4a;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+h1 {
+  font-size: 40px;
+  text-align: center;
+}
+
+h3 {
+  font-size: 15px;
+  text-align: center;
+}
+
+h4 {
+  font-size: 15px;
+  text-align: center;
+}
+
+
+.container {
+  padding-top: 50px;
+  padding-bottom: 50px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;  
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.instrument {
+  background: #333;
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  flex: 1 1 300px;
+  max-width: 120px;
+  height: 100%;
+  cursor: pointer;
+}
+
+.instrument:hover {
+  background: #555;
+}
+
+.knobs {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0px;
+  margin: 10px;
+}
+
+
+/* Container principale degli effetti */
+.effects {
+  display: flex;
+  flex-direction: column;
+  justify-content: right;
+  align-items: right;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* Sezione individuale per ogni effetto */
+.effect-section {
+  background: #2a2a2a;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  width: 80%;
+  max-width: 400px;
+  text-align: center;
+  border: 2px solid #444;
+}
+
+
+/* Label dello slider */
+.effect-section label {
+  display: block;
+  margin-top: 10px;
+  color: #e0e0e0;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+/* Slider stile mixer squadrato */
+.effect-section input[type="range"] {
+  -webkit-appearance: none; 
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  margin-top: 10px;
+  background: #333; 
+  border: 1px solid #555;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6), 0 0 2px rgba(255, 255, 255, 0.1);
+  outline: none;
+  transition: background 0.3s;
+}
+
+/* Thumb rettangolare per il controllo */
+.effect-section input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; 
+  appearance: none;
+  width: 16px; 
+  height: 24px;
+  background: linear-gradient(145deg, #666, #222); 
+  border: 2px solid #000;
+  border-radius: 3px; /* Forma squadrata */
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: transform 0.2s, background 0.3s;
+}
+
+.effect-section input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1); /* Ingrandisce leggermente il cursore al passaggio del mouse */
+  background: linear-gradient(145deg, #777, #333);
+}
+
+.effect-section input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 24px;
+  background: linear-gradient(145deg, #666, #222);
+  border: 2px solid #000;
+  border-radius: 3px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: transform 0.2s, background 0.3s;
+}
+
+.effect-section input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  background: linear-gradient(145deg, #777, #333);
+}
+
+/* Aggiunge indicatori sulla barra dello slider per un look da mixer */
+.effect-section input[type="range"]::before {
+  content: '';
+  display: block;
+  position: absolute;
+  height: 6px;
+  width: 100%;
+  background: repeating-linear-gradient(
+    to right,
+    #444,
+    #444 5%,
+    #333 5%,
+    #333 10%
+  );
+  border-radius: 3px;
+  z-index: -1; /* Posiziona gli indicatori dietro il cursore */
 }

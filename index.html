@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Analog Drum Machine</title>
+  <title>Generative Drum Machine</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css">
   <link rel="stylesheet" href="style.css">
-
   <link rel="stylesheet" href="asset/ui.css" />
   <link rel="stylesheet" href="asset/css_knobs.css" />
-  <script type="text/javascript" src="jquery.min.js"></script>
-  <script type="text/javascript" src="Knob.js"></script>
-
+  <script src="jquery.min.js"></script>
+  <script src="Knob.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.26/Tone.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/nexusui@2.0.5/dist/NexusUI.min.js"></script>
 </head>
 <body>
   <div class="progress red">
@@ -29,35 +29,52 @@
       data-angle-start="-30" 
       data-angle-end="210"
       /> 
-    <div style="font-size: 20px;">Tempo</div>
+    <div style="font-size: 20px;">TEMPO</div>
     <div class="sequencer">
       <div class="steps">
-        <div class="drum-label">
-          <div class="cell kick on" data-step-idx="0" data-cell-idx="0" style="height: calc(90% / 7);">Kick</div>
-          <div class="cell snare" data-step-idx="0" data-cell-idx="1" style="height: calc(90% / 7);">Snare</div>
-          <div class="cell hi-hat-closed" data-step-idx="0" data-cell-idx="2" style="height: calc(90% / 7);">Hi-hat closed</div>
-          <div class="cell hi-hat-open" data-step-idx="0" data-cell-idx="3" style="height: calc(90% / 7);">Hi-hat open</div>
-          <div class="cell tom-mid" data-step-idx="0" data-cell-idx="4" style="height: calc(90% / 7);">Tom mid</div>
-          <div class="cell clap" data-step-idx="0" data-cell-idx="5" style="height: calc(90% / 7);">Clap</div>
-          <div class="cell rim" data-step-idx="0" data-cell-idx="6" style="height: calc(90% / 7);">Rim</div></div>
+        <div class="legend">
+          <div class="drum-label" id="kick-cell">KICK</div>
+          <div class="drum-label" id="snare-cell">SNARE</div>
+          <div class="drum-label" id="hihatopen-cell">HI-HAT CLOSE</div>
+          <div class="drum-label" id="hihatclose-cell">HI-HAT OPEN</div>
+          <div class="drum-label" id="tommid-cell">TOM MID</div>
+          <div class="drum-label" id="clap-cell">CLAP</div>
+          <div class="drum-label" id="rim-cell">RIM</div>
+        </div>
         </div>
       </div>
+
+
       <!-- Controls for the drum machine -->
+       
     <div class="controls">
+
       <!-- Play/Pause button -->
+
       <div class="control" >
         <a class="playpause waves-effect">
           PLAY/PAUSE
         </a>
       </div>
+
       <!-- Regenerate button -->
       <div class="control">
         <a class="regenerate waves-effect">
           GENERATE
         </a>
       </div>
+
+      <!-- Clear button -->
+      <div class="control">
+        <a class="clear waves-effect" id="clear-pattern">
+          CLEAN
+        </a>
+      </div>
+
+
       <!-- Swing control -->
       <div class="control">
+        <h4>SWING</h4>
         <input id="swing"
          type="range"
          min="0.5" max="0.7" value="0.55" step="0.01"
@@ -66,10 +83,11 @@
          data-angle-start="-30" 
          data-angle-end="210" 
          style="display: none;">
-        <div class="control-label" style="font-size: 40px;">Swing</div>
+        <div class="control-label" style="font-size: 20px;"></div>
       </div>
       <!-- Temperature control -->
       <div class="control">
+        <h4>TEMPERATURE</h4>
         <input id="temperature"
          name="secret_arrow"
          type="range"
@@ -81,67 +99,94 @@
          style="display: none;"
          data-tooltip="Higher temperatures will make the neural network generate wilder patterns"
         data-delay="500"/>
-        <div class="control-label" style="font-size: 40px;">Temperature</div>
+        <div class="control-label" style="font-size: 20px;"></div>
       </div>
-    </div>
+    </div>  
+
+  <!-- Modulation section -->
+  <div class ="container">
+    <div class="instrument">
+      <h3>KICK</h3>
+      <div class="knobs">
+        <input id="kick-attack" type="range" min="0.01" max="0.80" value="0.02" step="0.01" data-sprite-count="120" data-sprite-separation-gap="1" data-angle-start="-30" data-angle-end="210">
+        <label>Attack</label>
+        <input id="kick-release" type="range" min="0.01" max="1" value="0.3" step="0.01" data-sprite-count="120" data-sprite-separation-gap="1" data-angle-start="-30" data-angle-end="210">
+        <label>Release</label>
+        <input id="kick-pitch" type="range" min="50" max="300" value="120" step="0.01" data-sprite-count="120" data-sprite-separation-gap="1" data-angle-start="-30" data-angle-end="210">
+        <label>Pitch</label>
+        <input id="kick-gain" type="range" min="0" max="0.8" value="0.4" step="0.01" data-sprite-count="120" data-sprite-separation-gap="1" data-angle-start="-30" data-angle-end="210">
+        <label>Gain</label>
+      </div>
+      <button class="hitbutt" id="trigger-kick">HIT</button>
     </div>
 
-    
-    
-    <!-- Modulation section -->
-    <div class="modulation-section">
+    <div class="instrument">
+      <h3>SNARE</h3>
+      <div class="knobs">
+        <input id="snare-attack" type="range" min="0.01" max="1" value="0.01" step="0.01" data-sprite-count="120" data-sprite-separation-gap="1" data-angle-start="-30" data-angle-end="210">
+        <label>Attack</label>
+        <input id="snare-release" type="range" min="0.01" max="1" value="0.2" step="0.01" data-sprite-count="120" data-sprite-separation-gap="1" data-angle-start="-30" data-angle-end="210">
+        <label>Release</label>
+        <input id="snare-pitch" type="range" min="0" max="1" value="120" step="0.01" data-sprite-count="120" data-sprite-separation-gap="1" data-angle-start="-30" data-angle-end="210">
+        <label>Pitch</label>
+        <input id="snare-gain" type="range" min="0" max="1" value="0.8" step="0.01" data-sprite-count="120" data-sprite-separation-gap="1" data-angle-start="-30" data-angle-end="210">
+        <label>Gain</label>
+      </div>
+      <button class="hitbutt" id="trigger-snare">HIT</button>
+    </div>
 
-      <div class="modulation-row">
-        <div class="label">Kick</div>
-        <input type="range" class="knob" data-param="kick-pitch" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="kick-attack" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="kick-reverb" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="kick-saturation" min="0" max="100" value="50">
+    <div class="instrument">
+      <h3>HH CLOSE</h3>
+      <div class="knobs">
+        <input id="hihatcl-attack" type="range" min="0.01" max="1" value="0.01" step="0.01" data-sprite-count="120" data-sprite-separation-gap="1" data-angle-start="-30" data-angle-end="210">
+        <label>Attack</label>
+        <input id="hihatcl-release" type="range" min="0.01" max="1" value="0.1" step="0.01" data-sprite-count="120" data-sprite-separation-gap="1" data-angle-start="-30" data-angle-end="210">
+        <label>Release</label>
+        <input id="hihatcl-pitch" type="range" min="0" max="1" value="120" step="0.01" data-sprite-count="120" data-sprite-separation-gap="1" data-angle-start="-30" data-angle-end="210">
+        <label>Pitch</label>
+        <input id="hihatcl-gain" type="range" min="0" max="1" value="0.8" step="0.01" data-sprite-count="120" data-sprite-separation-gap="1" data-angle-start="-30" data-angle-end="210">
+        <label>Gain</label>
       </div>
-      <div class="modulation-row">
-        <div class="label">Snare</div>
-        <input type="range" class="knob" data-param="snare-pitch" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="snare-attack" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="snare-reverb" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="snare-saturation" min="0" max="100" value="50">
+      <button class="hitbutt" id="trigger-hihat">HIT</button>
+    </div>    
+
+    <div class="instrument">
+      <h3>HH OPEN</h3>
+      <div class="knobs">
+        <input id="hihatop-attack" type="range" min="0.01" max="1" value="0.01" step="0.01" data-sprite-count="120" data-sprite-separation-gap="1" data-angle-start="-30" data-angle-end="210">
+        <label>Attack</label>
+        <input id="hihatop-release" type="range" min="0.01" max="1" value="0.1" step="0.01" data-sprite-count="120" data-sprite-separation-gap="1" data-angle-start="-30" data-angle-end="210">
+        <label>Release</label>
+        <input id="hihatop-pitch" type="range" min="0" max="1" value="120" step="0.01" data-sprite-count="120" data-sprite-separation-gap="1" data-angle-start="-30" data-angle-end="210">
+        <label>Pitch</label>
+        <input id="hihatop-gain" type="range" min="0" max="1" value="0.8" step="0.01" data-sprite-count="120" data-sprite-separation-gap="1" data-angle-start="-30" data-angle-end="210">
+        <label>Gain</label>
       </div>
-      <div class="modulation-row">
-        <div class="label">Hi-hat Closed</div>
-        <input type="range" class="knob" data-param="hat-closed-pitch" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="hat-closed-attack" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="hat-closed-reverb" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="hat-closed-saturation" min="0" max="100" value="50">
+      <button class="hitbutt" id="trigger-hihatop">HIT</button>
+    </div>
+
+    <!-- Effect section -->
+
+    <div class="effects">
+      <div class="effect-section">
+        <h4>REVERB</h4>
+        <input id="reverb-slider" type="range" min="0" max="100" step="1" value="0">
       </div>
-      <div class="modulation-row">
-        <div class="label">Hi-hat Open</div>
-        <input type="range" class="knob" data-param="hat-open-pitch" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="hat-open-attack" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="hat-open-reverb" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="hat-open-saturation" min="0" max="100" value="50">
+
+      <div class="effect-section">
+        <h4>DELAY</h4>
+        <input id="delay-slider" type="range" min="0" max="100" step="1" value="0">
       </div>
-      <div class="modulation-row">
-        <div class="label">Tom</div>
-        <input type="range" class="knob" data-param="tom-pitch" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="tom-attack" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="tom-reverb" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="tom-saturation" min="0" max="100" value="50">
-      </div>
-      <div class="modulation-row">
-        <div class="label">Clap</div>
-        <input type="range" class="knob" data-param="clap-pitch" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="clap-attack" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="clap-reverb" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="clap-saturation" min="0" max="100" value="50">
-      </div>
-      <div class="modulation-row">
-        <div class="label">Rim</div>
-        <input type="range" class="knob" data-param="rim-pitch" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="rim-attack" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="rim-reverb" min="0" max="100" value="50">
-        <input type="range" class="knob" data-param="rim-saturation" min="0" max="100" value="50">
+
+      <div class="effect-section">
+        <h4>HIGH-PASS FILTER</h4>
+        <input id="highpass-slider" type="range" min="0" max="100" step="1" value="0">
       </div>
     </div>
-  </div>
+
+  </div> 
+
+
   <!-- MIDI section -->
   </div>
   <div class="info">

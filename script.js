@@ -15,33 +15,74 @@ let sampleBaseUrl = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/969699';
 
 let snarePanner = new Tone.Panner().toMaster();
 new Tone.LFO(0.13, -0.25, 0.25).connect(snarePanner.pan).start();
+// Kick
+const kickSynth = new Tone.MembraneSynth({    
+  envelope: { attack: 0.03, decay: 0.2, sustain: 0, release: 0.3 },
+  volume: -6 
+}).toMaster();
+
+const distortion = new Tone.Distortion(0.4).toMaster();
+kickSynth.connect(distortion);
+
+document.getElementById("trigger-kick").addEventListener("click", () => {
+  
+  kickSynth.triggerAttackRelease("C2", "8n");
+});
+
+
+// Snare
+const snareDrum = new Tone.NoiseSynth({    
+  envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 },
+  volume: -17, // Increased volume for a harder sound
+  noise: { type: 'white' } // Use white noise for a sharper snare sound
+}).toMaster();
+
+const snareDistortion = new Tone.Distortion(0.4).toMaster();
+snareDrum.connect(snareDistortion);
+
+ document.getElementById("trigger-snare").addEventListener("click", () => {
+  
+  snareDrum.triggerAttackRelease("8n");
+});
+
+// Hi-hat
+const hiHatSynth = new Tone.MetalSynth({
+  frequency: 200, envelope: { attack: 0.01, decay: 0.2, release: 0.1 },
+  harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5,
+  volume: -12 // Reduced by 6 dB
+}).toMaster();
+
+document.getElementById("trigger-hihat").addEventListener("click", () => {
+  
+  hiHatSynth.triggerAttackRelease("8n");
+});
+
+
+// Open Hi-hat
+const hiHatOpSynth = new Tone.NoiseSynth({
+  frequency: 400, envelope: { attack: 0.01, decay: 0.1, release: 0.1 },
+  harmonicity: 6.1, modulationIndex: 32, resonance: 5000, octaves: 1.5,
+  volume: -18 // Reduced by 6 dB
+}).toMaster();
+
+
+document.getElementById("trigger-hihatop").addEventListener("click", () => {
+ 
+  hiHatOpSynth.triggerAttackRelease("8n");
+});
+
+
 
 let drumKit = [
-  new Tone.Players({
-    high: `${sampleBaseUrl}/808-kick-vh.mp3`,
-    med: `${sampleBaseUrl}/808-kick-vm.mp3`,
-    low: `${sampleBaseUrl}/808-kick-vl.mp3`
-  }).toMaster(),
-  new Tone.Players({
-    high: `${sampleBaseUrl}/flares-snare-vh.mp3`,
-    med: `${sampleBaseUrl}/flares-snare-vm.mp3`,
-    low: `${sampleBaseUrl}/flares-snare-vl.mp3`
-  }).connect(snarePanner),
-  new Tone.Players({
-    high: `${sampleBaseUrl}/808-hihat-vh.mp3`,
-    med: `${sampleBaseUrl}/808-hihat-vm.mp3`,
-    low: `${sampleBaseUrl}/808-hihat-vl.mp3`
-  }).connect(new Tone.Panner(-0.5).toMaster()),
-  new Tone.Players({
-    high: `${sampleBaseUrl}/808-hihat-open-vh.mp3`,
-    med: `${sampleBaseUrl}/808-hihat-open-vm.mp3`,
-    low: `${sampleBaseUrl}/808-hihat-open-vl.mp3`
-  }).connect(new Tone.Panner(-0.5).toMaster()),
+  kickSynth,
+  snareDrum.connect(snarePanner),
+  hiHatSynth.connect(new Tone.Panner(-0.5).toMaster()),
+  hiHatOpSynth.connect(new Tone.Panner(-0.5).toMaster()),
   new Tone.Players({
     high: `${sampleBaseUrl}/slamdam-tom-mid-vh.mp3`,
     med: `${sampleBaseUrl}/slamdam-tom-mid-vm.mp3`,
     low: `${sampleBaseUrl}/slamdam-tom-mid-vl.mp3`
-  }).toMaster(),
+  }).connect(new Tone.Panner(0.5).toMaster()),
   new Tone.Players({
     high: `${sampleBaseUrl}/909-clap-vh.mp3`,
     med: `${sampleBaseUrl}/909-clap-vm.mp3`,
@@ -53,6 +94,8 @@ let drumKit = [
     low: `${sampleBaseUrl}/909-rim-vl.wav`
   }).connect(new Tone.Panner(0.5).toMaster())
 ];
+
+
 let midiDrums = [36, 38, 42, 46, 43, 49, 51];
 let reverseMidiMapping = new Map([
   [36, 0],
@@ -109,10 +152,32 @@ let temperature = 1.0;
 
 let outputs = {
   internal: {
-    play: (drumIdx, velocity, time) => {
-      drumKit[drumIdx].get(velocity).start(time);
+  play: (drumIdx, velocity, time) => {
+    if (drumIdx === 0) {
+      kickSynth.triggerAttackRelease("C2", "8n", time);
+    } else if (drumIdx === 1) {
+      snareDrum.triggerAttackRelease("8n", time);
+    } else if (drumIdx === 2) {
+      hiHatSynth.triggerAttackRelease("8n", time);
+    }  else if (drumIdx === 3) {
+      hiHatOpSynth.triggerAttackRelease("8n", time);
+    }
+    else {
+      let player = drumKit[drumIdx];
+      if (player instanceof Tone.Players) {
+        player.get(velocity).start(time);
+      }
     }
   }
+}
+}
+
+window.state = {
+  patternLength: 16,
+  seedLength: 4,
+  swing: 0.50,
+  pattern: Array.from({ length: 16 }, () => []),
+  tempo: 120
 };
 
 let rnn = new mm.MusicRNN(
@@ -126,7 +191,7 @@ Promise.all([
     patternLength: 16, // Initialize pattern length to 16
     seedLength: 4, // Fix seed length to 4
     swing: 0.50,
-    pattern: [[0], [], [2]].concat(_.times(13, i => [])), // Ensure pattern length is 16
+    pattern: Array.from({ length: 16 }, () => []), // Ensure pattern length is 16
     tempo: 120
   };
   let stepEls = [],
@@ -186,16 +251,17 @@ Promise.all([
     updatePlayPauseIcons();
   }
 
-  function stopPattern() {
+  window.stopPattern = function() {
     stepCounter = null;
     updatePlayPauseIcons();
-  }
+  };
+
 
   function visualizePlay(time, stepIdx, drumIdx) {
     Tone.Draw.schedule(() => {
       if (!stepEls[stepIdx]) return;
       let cellEl = stepEls[stepIdx].cellEls[drumIdx];
-      if (cellEl.classList.contains('on')) {
+      if (cellEl && cellEl.classList.contains('on')) { // Ensure cellEl is defined
         cellEl.style.boxShadow = '0 4px 8px rgba(255, 255, 255, 0.5)';
         setTimeout(() => {
           cellEl.style.boxShadow = 'none';
@@ -204,7 +270,7 @@ Promise.all([
     }, time);
   }
 
-  function renderPattern(regenerating = false) {
+  window.renderPattern = function(regenerating = false) {
     let seqEl = document.querySelector('.sequencer .steps');
     while (stepEls.length > state.pattern.length) {
       let { stepEl } = stepEls.pop();
@@ -262,7 +328,6 @@ Promise.all([
         }
       }, stagger);
     }
-
   }
 
  
@@ -342,12 +407,17 @@ Promise.all([
   }
 
   function updatePlayPauseIcons() {
-    if (_.isNumber(stepCounter)) {
-      document.querySelector('.playpause .pause-icon').style.display = null;
-      document.querySelector('.playpause .play-icon').style.display = 'none';
-    } else {
-      document.querySelector('.playpause .play-icon').style.display = null;
-      document.querySelector('.playpause .pause-icon').style.display = 'none';
+    const pauseIcon = document.querySelector('.playpause .pause-icon');
+    const playIcon = document.querySelector('.playpause .play-icon');
+    
+    if (pauseIcon && playIcon) {
+      if (_.isNumber(stepCounter)) {
+        pauseIcon.style.display = null;
+        playIcon.style.display = 'none';
+      } else {
+        playIcon.style.display = null;
+        pauseIcon.style.display = 'none';
+      }
     }
   }
 
@@ -585,30 +655,33 @@ Promise.all([
     }
   });
   document.querySelector('.app').addEventListener('mouseup', () => {
-    draggingSeedMarker = false;
+    // No need to handle draggingSeedMarker
   });
   document.querySelector('.app').addEventListener('mouseover', evt => {
-    if (draggingSeedMarker) {
-      let el = evt.target;
-      while (el) {
-        if (el.classList.contains('step')) {
-          let stepIdx = +el.dataset.stepIdx;
-          if (stepIdx > 0) {
-            state.seedLength = stepIdx;
-            renderPattern();
-          }
-          break;
-        }
-        el = el.parentElement;
-      }
-    }
+    // No need to handle draggingSeedMarker
   });
-
 
   const knobs = [
     { id: 'tempo', image: 'knobs/gb/small_black_120.png' },
     { id: 'swing', image: 'knobs/gb/pointy_red_120.png' },
-    { id: 'temperature', image: 'knobs/gb/pointy_white_120.png' }
+    { id: 'temperature', image: 'knobs/gb/pointy_white_120.png' },
+    { id: 'kick-attack', image: 'knobs/gb/small_black_120.png' },
+    { id: 'kick-release', image: 'knobs/gb/small_black_120.png' },
+    { id: 'kick-pitch', image: 'knobs/gb/small_black_120.png' },
+    { id: 'kick-gain', image: 'knobs/gb/small_black_120.png' },
+    { id: 'snare-attack', image: 'knobs/gb/small_black_120.png' },
+    { id: 'snare-release', image: 'knobs/gb/small_black_120.png' },
+    { id: 'snare-pitch', image: 'knobs/gb/small_black_120.png' },
+    { id: 'snare-gain', image: 'knobs/gb/small_black_120.png' },
+    { id: 'hihatcl-attack', image: 'knobs/gb/small_black_120.png' },
+    { id: 'hihatcl-release', image: 'knobs/gb/small_black_120.png' },
+    { id: 'hihatcl-pitch', image: 'knobs/gb/small_black_120.png' },
+    { id: 'hihatcl-gain', image: 'knobs/gb/small_black_120.png' },
+    { id: 'hihatop-attack', image: 'knobs/gb/small_black_120.png' },
+    { id: 'hihatop-release', image: 'knobs/gb/small_black_120.png' },
+    { id: 'hihatop-pitch', image: 'knobs/gb/small_black_120.png' },
+    { id: 'hihatop-gain', image: 'knobs/gb/small_black_120.png' },
+
   ];
 
   knobs.map(({id, image, indicator}) => {
@@ -619,33 +692,57 @@ Promise.all([
   knobs.forEach(({ id, image }) => {
     const knobElement = document.getElementById(id);
 
+    // Set the initial position of the knob to match its value
+    knobElement.value = knobElement.getAttribute('value');
+
     // Log the value when the knob changes
     knobElement.addEventListener('change', (event) => {
-      console.log(`Knob "${id}" value: ${event.target.value}`);
+      const value = parseFloat(event.target.value);
+      if (!isFinite(value)) return; // Ensure the value is finite
+
+      console.log(`Knob "${id}" value: ${value}`);
       if (id === 'tempo') {
-        Tone.Transport.bpm.value = state.tempo = +event.target.value;
+        Tone.Transport.bpm.value = state.tempo = value;
         oneEighth = Tone.Time('8n').toSeconds();
       } else if (id === 'swing') { 
-        setSwing(+event.target.value);
+        setSwing(value);
       } else if (id === 'temperature') {
-        temperature = +event.target.value;
+        temperature = value;
+      } else if (id === 'kick-attack') {
+        kickSynth.envelope.attack = value;
+      } else if (id === 'kick-release') {
+        kickSynth.envelope.release = value;
+      } else if (id === 'kick-pitch') {
+        kickSynth.pitchDecay = value / 1000;
+      } else if (id === 'kick-gain') {
+        kickSynth.volume.value = Tone.gainToDb(value);
+      } else if (id === 'snare-attack') {
+        snareDrum.envelope.attack = value;
+      } else if (id === 'snare-release') {
+        snareDrum.envelope.release = value;
+      } else if (id === 'snare-gain') {
+        snareDrum.volume.value = Tone.gainToDb(value);
+      } else if (id === 'hihatcl-attack') {
+        hiHatSynth.envelope.attack = value;
+      } else if (id === 'hihatcl-release') {
+        hiHatSynth.envelope.release = value;
+      } else if (id === 'hihatcl-pitch') {
+        hiHatSynth.frequency.value = value;
+      } else if (id === 'hihatcl-gain') {
+        hiHatSynth.volume.value = Tone.gainToDb(value);
+      } else if (id === 'hihatop-attack') {
+        hiHatOpSynth.envelope.attack = event.target.value;
+      } else if (id === 'hihatop-release') {
+        hiHatOpSynth.envelope.release = event.target.value;
+      } else if (id === 'hihatop-gain') {
+        hiHatOpSynth.volume.value = Tone.gainToDb(event.target.value);
+      } else if (id === 'hihatop-gain') {
+        hiHatOpSynth.volume.value = Tone.gainToDb(event.target.value);
       }
     });
   });
   
-  document.querySelector('#swing').addEventListener('input', evt => {
-    setSwing(+evt.target.value);
-    console.log('swing', evt.target.value);
-    document.querySelector('#swing-value').textContent = evt.target.value;
-  });
-  document.querySelector('#temperature').addEventListener('input', evt => {
-    temperature = +evt.target.value;
-    document.querySelector('#temperature-value').textContent = evt.target.value;
-  });
-  document.querySelector('#tempo').addEventListener('input', evt => {
-    Tone.Transport.bpm.value = state.tempo = +evt.target.value;
-    oneEighth = Tone.Time('8n').toSeconds();
-  });
+  
 
   $('#pattern-length')
     .on('change', evt => setPatternLength(+evt.target.value))
@@ -658,43 +755,75 @@ Promise.all([
   document.querySelector('.app').style.display = null;
 });
 
-/* ...existing code... */
-const modulationParams = {
-  'kick': { pitch: 50, attack: 50, reverb: 50, saturation: 50 },
-  'snare': { pitch: 50, attack: 50, reverb: 50, saturation: 50 },
-  'hat-closed': { pitch: 50, attack: 50, reverb: 50, saturation: 50 },
-  'hat-open': { pitch: 50, attack: 50, reverb: 50, saturation: 50 },
-  'tom': { pitch: 50, attack: 50, reverb: 50, saturation: 50 },
-  'clap': { pitch: 50, attack: 50, reverb: 50, saturation: 50 },
-  'rim': { pitch: 50, attack: 50, reverb: 50, saturation: 50 }
-};
 
-document.querySelectorAll('.modulation-row .knob').forEach(knob => {
-  knob.addEventListener('input', event => {
-    const param = event.target.dataset.param.split('-');
-    const sound = param[0];
-    const control = param[1];
-    modulationParams[sound][control] = event.target.value;
-    applyModulation(sound, control, event.target.value);
-  });
+
+
+// Creazione effetti con valori iniziali
+const reverb = new Tone.Freeverb();
+const delay = new Tone.FeedbackDelay("8n", 0.5);
+const highPassFilter = new Tone.Filter(500, "highpass");
+
+reverb.wet.value = 0;
+delay.wet.value = 0;
+highPassFilter.frequency.value = 20;
+
+// Assicuriamoci che ogni drum pad sia collegato alla catena di effetti
+drumKit.forEach(drum => {
+  drum.disconnect();
+  drum.connect(highPassFilter); // Passa prima dal filtro
+  highPassFilter.connect(reverb); // Poi il riverbero
+  reverb.connect(delay); // Poi il delay
+  delay.connect(Tone.Master); // Uscita finale
 });
 
 
-/* ...existing code... */
-function applyModulation(sound, control, value) {
-  const player = drumKit[DRUM_CLASSES.indexOf(sound.charAt(0).toUpperCase() + sound.slice(1))];
-  switch (control) {
-    case 'pitch':
-      player.playbackRate = value / 50; // Adjust playback rate for pitch modulation
-      break;
-    case 'attack':
-      player.attack = value / 100; // Adjust attack time
-      break;
-    case 'reverb':
-      const reverb = new Tone.Reverb(value / 10).toMaster();
-      player.connect(reverb); // Connect player to reverb
-      break;
-    default:
-      console.log(`Unknown control: ${control}`);
-  }
+// Funzione per mappare i valori (0-100 dello slider → range scelto)
+function mapRange(value, inMin, inMax, outMin, outMax) {
+  return ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin;
 }
+
+// Funzione per aggiornare gli effetti in base agli slider
+function updateEffect(effect, slider, min, max) {
+  let sliderValue = parseFloat(slider.value);
+  let mappedValue = mapRange(sliderValue, 0, 100, min, max);
+  effect.linearRampTo(mappedValue, 0.1);
+}
+
+// Controllo del Riverbero
+const reverbSlider = document.getElementById("reverb-slider");
+reverbSlider.addEventListener("input", () => updateEffect(reverb.wet, reverbSlider, 0, 1));
+
+// Controllo del Delay
+const delaySlider = document.getElementById("delay-slider");
+delaySlider.addEventListener("input", () => updateEffect(delay.wet, delaySlider, 0, 1));
+
+// Controllo High-Pass Filter
+const highpassSlider = document.getElementById("highpass-slider");
+highpassSlider.addEventListener("input", () => updateEffect(highPassFilter.frequency, highpassSlider, 20, 1000));
+
+// Forza un update iniziale per sincronizzare i valori (IMPORTANTE!)
+setTimeout(() => {
+  reverbSlider.dispatchEvent(new Event('input'));
+  delaySlider.dispatchEvent(new Event('input'));
+  highpassSlider.dispatchEvent(new Event('input'));
+}, 100);
+
+
+// CLEAR
+setTimeout(() => {
+  reverbSlider.dispatchEvent(new Event('input'));
+  delaySlider.dispatchEvent(new Event('input'));
+  highpassSlider.dispatchEvent(new Event('input'));
+}, 100);
+
+
+document.getElementById("clear-pattern").addEventListener("click", () => {
+  state.pattern = Array.from({ length: state.patternLength }, () => []);
+  stopPattern();
+  
+  document.querySelectorAll(".cell.on").forEach(cell => cell.classList.remove("on"));
+
+  stepEls.forEach(({ stepEl }) => stepEl.remove("on"));
+
+  renderPattern();
+});
